@@ -38,7 +38,7 @@ jobs:
           hitokoto_fromwho = hitokoto_response.json()['from_who']
 
           # flomo API 地址
-          flomo_url = "https://flomoapp.com/iwh/MTQzNzU5NA/47c8d9b61c1e5cc8fcb602ca137d5452/"
+          flomo_url = "${{ secrets.FLOMO_API_URL }}"
 
           # 发送 POST 请求到 flomo
           headers = {

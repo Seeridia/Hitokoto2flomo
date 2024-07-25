@@ -1,30 +1,53 @@
-name: Daily Hitokoto
+name: Daily Hitokoto to Flomo
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天 00:00 UTC 执行
+    - cron: '0 0 * * *' # 每天 UTC 0:00 运行，对应北京时间 8:00
 
 jobs:
   send-hitokoto:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Hitokoto
-        id: fetch-hitokoto
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const response = await fetch('https://v1.hitokoto.cn');
-            const data = await response.json();
-            return data.hitokoto;
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Send to Server酱
-        uses: actions/github-script@v6
+      - name: Setup Python
+        uses: actions/setup-python@v2
         with:
-          script: |
-            const hitokoto = `"${{ steps.fetch-hitokoto.outputs.result }}"`;
-            const serverChanKey = ${{ secrets.SERVERCHAN_KEY }}; // 从 secrets 中读取 Server酱 的 key
-            const res = await fetch(`https://sctapi.ftqq.com/${serverChanKey}.send?title=一言&desp=` + encodeURIComponent(hitokoto));
-            console.log(await res.text());
-        env:
-          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }} 
+          python-version: '3.x'
 
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Python script
+        run: |
+          python << EOF
+          import requests
+
+          # 获取一言
+          hitokoto_url = "https://v1.hitokoto.cn/"
+          hitokoto_response = requests.get(hitokoto_url)
+          hitokoto_response.raise_for_status()
+          hitokoto = hitokoto_response.json()['hitokoto']
+          hitokoto_from = hitokoto_response.json()['from']
+          hitokoto_fromwho = hitokoto_response.json()['from_who']
+
+          # flomo API 地址
+          flomo_url = ${{ secrets.FLOMO_API_URL }}
+
+          # 发送 POST 请求到 flomo
+          headers = {
+              "Content-Type": "application/json"
+          }
+          data = {
+              "content": f"#一言\n{hitokoto}\n——{hitokoto_fromwho}（{hitokoto_from}）"
+          }
+
+          try:
+              flomo_response = requests.post(flomo_url, headers=headers, json=data)
+              flomo_response.raise_for_status()
+              print("一言已成功发送到 flomo!")
+
+          except requests.exceptions.RequestException as e:
+              print("发送一言到 flomo 时出错:", e)
+          EOF

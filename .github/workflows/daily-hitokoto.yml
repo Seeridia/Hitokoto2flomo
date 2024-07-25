@@ -1,8 +1,14 @@
 name: Daily Hitokoto to Flomo
 
+#on:
+#  schedule:
+#    - cron: '0 0 * * *' # 每天 UTC 0:00 运行，对应北京时间 8:00
+
 on:
-  schedule:
-    - cron: '0 0 * * *' # 每天 UTC 0:00 运行，对应北京时间 8:00
+  push:
+    branches:
+      - main  
+
 
 jobs:
   send-hitokoto:
@@ -23,31 +29,74 @@ jobs:
         run: |
           python << EOF
           import requests
+          import random
+          import datetime
 
-          # 获取一言
-          hitokoto_url = "https://v1.hitokoto.cn/"
-          hitokoto_response = requests.get(hitokoto_url)
-          hitokoto_response.raise_for_status()
-          hitokoto = hitokoto_response.json()['hitokoto']
-          hitokoto_from = hitokoto_response.json()['from']
-          hitokoto_fromwho = hitokoto_response.json()['from_who']
+          # 定义字母和对应内容的字典
+          letter_dict = {
+            'a': '动画',
+            'b': '漫画',
+            'c': '游戏',
+            'd': '文学',
+            'e': '原创',
+            'f': '来自网络',
+            'g': '其他',
+            'h': '影视',
+            'i': '诗词',
+            'j': '网易云',
+            'k': '哲学',
+            'l': '抖机灵'
+          }
 
-          # flomo API 地址
+          # 随机选择一个字母
+          random_letter = random.choice(list(letter_dict.keys()))
+          
+          # 获取对应内容
+          content = letter_dict[random_letter]
+          
+          hitokoto_url = "https://v1.hitokoto.cn/?c=" + random_letter
           flomo_url = "${{ secrets.FLOMO_API_URL }}"
-
-          # 发送 POST 请求到 flomo
-          headers = {
-              "Content-Type": "application/json"
-          }
-          data = {
-              "content": f"#一言\n{hitokoto}\n——{hitokoto_fromwho}（{hitokoto_from}）"
-          }
-
+          
           try:
-              flomo_response = requests.post(flomo_url, headers=headers, json=data)
-              flomo_response.raise_for_status()
-              print("一言已成功发送到 flomo!")
+              hitokoto_response = requests.get(hitokoto_url)
+              hitokoto_response.raise_for_status()
+              hitokoto_data = hitokoto_response.json()
+              hitokoto = hitokoto_data['hitokoto']
+              hitokoto_from = hitokoto_data['from']
+              hitokoto_fromwho = hitokoto_data['from_who']
+          
+              Aword = f"\n#一言/{content} {datetime.date.today()}\n{hitokoto}\n"
+          
+              # 打印结果
+              if content == '原创' or content == '其他' or content == '来自网络' or content == '抖机灵':
+                  Aword += " "
+              elif hitokoto_fromwho == None or hitokoto_fromwho == hitokoto_from:
+                  Aword += f"——{hitokoto_from}"
+              elif content == '网易云':
+                  Aword += f"——@{hitokoto_fromwho}"
+              elif content == '文学' or content == '哲学' or content == '诗词' or content == '动画' or content == '漫画' or content == '游戏' or content == '影视':
+                  Aword += f"——{hitokoto_fromwho} ⌈{hitokoto_from}⌋"
+              else:
+                  Aword += f"——{hitokoto_fromwho}({hitokoto_from})"
+              
+              # 发送 POST 请求到 flomo
+              headers = {
+                  "Content-Type": "application/json"
+              }
+              data = {
+                  "content": Aword
+              }
 
-          except requests.exceptions.RequestException as e:
-              print("发送一言到 flomo 时出错:", e)
+              try:
+                  flomo_response = requests.post(flomo_url, headers=headers, json=data)
+                  flomo_response.raise_for_status()
+                  print(f"一言已成功发送到 flomo!\n{Aword}")
+
+              except requests.exceptions.RequestException as e:
+                  print("发送一言到 flomo 时出错:", e)
+    
+
+          except requests.RequestException as e:
+              print(f"请求失败：{e}")
+
           EOF

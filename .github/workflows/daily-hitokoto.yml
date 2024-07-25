@@ -1,14 +1,8 @@
 name: Daily Hitokoto to Flomo
 
-#on:
-#  schedule:
-#    - cron: '0 0 * * *' # 每天 UTC 0:00 运行，对应北京时间 8:00
-
 on:
-  push:
-    branches:
-      - main  
-
+  schedule:
+    - cron: '0 0 * * *' # 每天 UTC 0:00 运行，对应北京时间 8:00
 
 jobs:
   send-hitokoto:

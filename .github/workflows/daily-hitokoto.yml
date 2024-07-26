@@ -1,8 +1,8 @@
-name: Daily Hitokoto
+name: Daily Hitokoto to Flomo
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 16 * * *' # Adjusted to run at 8:00 AM Beijing Time
 
 jobs:
   send-hitokoto:
@@ -62,13 +62,13 @@ jobs:
               Aword = f"\n#一言/{content} {datetime.date.today()}\n{hitokoto}\n"
           
               # 打印结果
-              if content == '原创' or content == '其他' or content == '来自网络' or content == '抖机灵':
+              if content == '原创' or content == '其他' or content == '来自网络'或 '抖机灵':
                   Aword += " "
               elif hitokoto_fromwho == None or hitokoto_fromwho == hitokoto_from:
                   Aword += f"——{hitokoto_from}"
               elif content == '网易云':
                   Aword += f"——@{hitokoto_fromwho}"
-              elif content == '文学' or content == '哲学' or content == '诗词' or content == '动画' or content == '漫画' or content == '游戏' or content == '影视':
+              elif content == '文学'或'哲学'或'诗词'或'动画'或'漫画'或'游戏'或'影视':
                   Aword += f"——{hitokoto_fromwho} ⌈{hitokoto_from}⌋"
               else:
                   Aword += f"——{hitokoto_fromwho}({hitokoto_from})"

@@ -2,7 +2,7 @@ name: Daily Hitokoto to Flomo
 
 on:
   schedule:
-    - cron: '0 16 * * *'
+    - cron: '0 0 * * *'
 
 
 jobs:

@@ -10,15 +10,15 @@
 
 ## 实例
 
-![alt text](image-1.png)
-![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
 
 ## 使用方法
 
 1. **Fork 本项目**
    点击右上角的 Fork 按钮，将本项目 Fork 到自己的 Github 仓库
 2. **配置 secrets**
-   进入自己的 Github 仓库，点击 Settings -> Secrets -> New repository secret，添加以下 secrets：
+   进入自己的 Github 仓库，点击 `Settings` -> `Security` -> `Secrets and variables` -> `Actions`，添加以下 secrets：
    - `FLOMO_API_URL`：你的 flomo 账户的 API URL，用于推送笔记
    > - 注意：请确保你的 flomo 账户已经开通 PRO 会员，否则无法推送笔记。
    > - API URL 形如 `https://flomoapp.com/iwh/xxxxxxx/xxxxxxx`
